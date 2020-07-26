@@ -51,6 +51,7 @@ import org.ogre.Radian;
 import org.ogre.SceneManager;
 import org.ogre.SceneNode;
 import org.ogre.ShaderGenerator;
+import org.ogre.Vector3;
 import org.ogre.Viewport;
 
 public class BasicSample extends Activity implements SensorEventListener {
@@ -137,25 +138,32 @@ public class BasicSample extends Activity implements SensorEventListener {
                                     
                                     Camera cam = scnMgr.createCamera("myCam");
                                     cam.setNearClipDistance(0.5f);
-                                    cam.setFOVy(new Radian(1.4f));
+                                    cam.setFOVy(new Radian(1f));
                                     cam.setAutoAspectRatio(true);
                                     
                                     SceneNode camnode = scnMgr.getRootSceneNode().createChildSceneNode();
                                     camnode.attachObject(cam);
-                                    camnode.setPosition(0, 0.75f, 2);
+                                    camnode.setPosition(0f, 0f, 10);
                                     camnode.setDirection(0f, 0f, 0f);
                                     
-                                    Entity ent = scnMgr.createEntity("Plane.mesh");
-									//animationState = ent.getAnimationState("speen2");
-									//animationState.setLoop(true);
-									//animationState.setEnabled(true);
+                                    Entity ent = scnMgr.createEntity("Cube.001.mesh");
+									animationState = ent.getAnimationState("speen2");
+									animationState.setLoop(true);
+									animationState.setEnabled(true);
 									time = System.currentTimeMillis();
-                                    SceneNode node = scnMgr.getRootSceneNode().createChildSceneNode("Plane");
+                                    SceneNode node = scnMgr.getRootSceneNode().createChildSceneNode("Cube");
                                     node.attachObject(ent);
-                                    //node.scale(0.1f, 0.1f, 0.1f);
-									//node.scale(7f, 7f, 7f);
-                                    //node.rotate(new Vector3(1f, 0f, 0f), new Radian(Math.getPI() / -2f));
-									//node.translate(0f, -4.5f, 0f);
+                                    node.scale(0.1f, 0.1f, 0.1f);
+									node.translate(0f, -4.5f, 0f);
+									//node.rotate(new Vector3(1f, 0f, 0f), new Radian(-1.5f));
+									//node.setVisible(false);
+
+									Entity ent2 = scnMgr.createEntity("Plane.mesh");
+									SceneNode node2 = scnMgr.getRootSceneNode().createChildSceneNode("Plane");
+									node2.attachObject(ent2);
+									//node2.translate(0f, -3f, 0f);
+									node2.scale(2f, 2f, 2f);
+									//node2.setVisible(false);
                                     
                                     Viewport vp = ogreApp.getRenderWindow().addViewport(cam);
                                     vp.setBackgroundColour(new ColourValue(0.3f, 0.3f, 0.3f));
@@ -174,6 +182,9 @@ public class BasicSample extends Activity implements SensorEventListener {
 								SceneNode node = scnMgr.getSceneNode("Plane");
 								node.yaw(new Radian(-delta));
 								//animationState.addTime(delta);
+								SceneNode cube = scnMgr.getSceneNode("Cube");
+								cube.yaw(new Radian(delta));
+								animationState.addTime(delta);
                                 ogreApp.getRoot().renderOneFrame();
                             }
 
