@@ -1,0 +1,14 @@
+vertex_program PSXVS glsles
+{
+	source PSXVp.glsl
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+		param_named_auto cViewportSize viewport_size
+	}
+}
+
+fragment_program PSXFS glsles
+{
+    source PSXFp.glsl
+}

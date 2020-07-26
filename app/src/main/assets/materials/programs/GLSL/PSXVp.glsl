@@ -1,5 +1,5 @@
 uniform mat4 worldViewProj;
-uniform float time;
+uniform vec4 cViewportSize; // auto param width/height/invWidth/invHeight
 
 attribute vec4 vertex;
 attribute vec4 uv0;
@@ -7,7 +7,7 @@ attribute vec4 uv0;
 varying vec4 modelPos;
 varying vec4 texCoord;
 
-#define SNAP_FACTOR 128.0
+#define SNAP_FACTOR 15.0
 
 void main(void)
 {
@@ -16,7 +16,8 @@ void main(void)
 
     vec4 noPersp = vec4(P.xyz / P.w, 1.0);
 
-    noPersp.xy = floor(noPersp.xy * SNAP_FACTOR) / SNAP_FACTOR;
+    vec2 factor = cViewportSize.zw * SNAP_FACTOR;
+    noPersp.xy = floor(noPersp.xy / factor) * factor;
 
 	gl_Position = noPersp;
 
