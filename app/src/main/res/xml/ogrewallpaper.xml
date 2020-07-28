@@ -3,4 +3,4 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:thumbnail="@drawable/ic_launcher"
     android:description="@string/todo"
-    android:settingsActivity="de.vogella.android.wallpaper.MyPreferencesActivity"/>
+    android:settingsActivity="org.ogre.example.PreferencesActivity"/>
