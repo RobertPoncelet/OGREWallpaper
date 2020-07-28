@@ -1,31 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.ogre.jni"
+    android:installLocation="auto"
     android:versionCode="1"
-    android:versionName="1.12.7"
-	android:installLocation="auto">
+    android:versionName="1.12.7">
 
     <uses-permission android:name="android.permission.CAMERA" />
 
-    <application android:label="OgreJNI" android:icon="@drawable/ic_launcher" android:hasCode="true">
-        
-        <activity android:name="org.ogre.example.BasicSample"
-        android:label="BasicSample"
-        android:configChanges="orientation|screenSize|keyboardHidden"
-        android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-            <meta-data android:name="android.app.lib_name" android:value="OgreJNI" />
+    <uses-feature
+        android:name="android.software.live_wallpaper"
+        android:required="true" />
+
+    <application
+        android:allowBackup="false"
+        android:hasCode="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="OgreJNI">
+        <activity android:name="org.ogre.example.SetWallpaperActivity"></activity>
+
+        <service
+            android:name="org.ogre.example.OgreWallpaperService"
+            android:enabled="true"
+            android:exported="true"
+            android:label="@string/todo"
+            android:permission="android.permission.BIND_WALLPAPER">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.service.wallpaper"
+                android:resource="@xml/ogrewallpaper" />
+        </service>
+
+        <activity
+            android:name="org.ogre.example.PreferencesActivity"
+            android:exported="true"
+            android:label="@string/todo"
+            android:theme="@android:style/Theme.Light.WallpaperSettings" />
+        <activity
+            android:name=".SetWallpaperActivity"
+            android:label="@string/todo"
+            android:theme="@android:style/Theme.Light.WallpaperSettings">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="org.ogre.example.AndroidTextureOES"
-        android:label="AndroidTextureOES"
-        android:configChanges="orientation|screenSize|keyboardHidden"
-        android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-            <meta-data android:name="android.app.lib_name" android:value="OgreJNI" />
+        <activity
+            android:name="org.ogre.example.BasicSample"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="BasicSample"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="OgreJNI" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="org.ogre.example.AndroidTextureOES"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="AndroidTextureOES"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="OgreJNI" />
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
