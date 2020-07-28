@@ -16,7 +16,6 @@
         android:hasCode="true"
         android:icon="@drawable/ic_launcher"
         android:label="OgreJNI">
-        <activity android:name="org.ogre.example.SetWallpaperActivity"></activity>
 
         <service
             android:name="org.ogre.example.OgreWallpaperService"
@@ -39,7 +38,7 @@
             android:label="@string/todo"
             android:theme="@android:style/Theme.Light.WallpaperSettings" />
         <activity
-            android:name=".SetWallpaperActivity"
+            android:name="org.ogre.example.SetWallpaperActivity"
             android:label="@string/todo"
             android:theme="@android:style/Theme.Light.WallpaperSettings">
             <intent-filter>
