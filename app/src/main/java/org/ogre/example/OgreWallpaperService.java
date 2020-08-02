@@ -116,7 +116,6 @@ public class OgreWallpaperService extends WallpaperService {
 
                     renderer = new Runnable() {
                         public void run() {
-                            //Log.d(LOG_TAG, "Renderer: " + ogreApp + ", initOGRE: " + initOGRE + ",  wndCreate: " + wndCreate);
                             if (paused) {
                                 Log.d(LOG_TAG, "Early return");
                                 return;
@@ -233,18 +232,17 @@ public class OgreWallpaperService extends WallpaperService {
         @Override
         public void onVisibilityChanged(boolean visible) {
             Log.d(LOG_TAG, "onVisibilityChanged(" + visible + ") " + this);
-            paused = !visible;
             if (visible) {
                 if (mSurfaceList.getCurrentSurface() != mSurfaceHolder) {
                     // TODO: this is a hack to put our own SurfaceHolder to the front of the list
                     mSurfaceList.removeSurface(mSurfaceHolder);
                     mSurfaceList.addSurface(mSurfaceHolder);
                 }
+                paused = false;
                 handler.post(renderer);
             } else {
                 if (mSurfaceList.getCurrentSurface() == mSurfaceHolder) {
-                    // TODO: this is a hack to put our own SurfaceHolder to the *back* of the list
-                    mSurfaceList.removeSurface(mSurfaceHolder);
+                    paused = true;
                     handler.removeCallbacks(renderer);
                 }
             }
