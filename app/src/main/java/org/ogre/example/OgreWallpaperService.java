@@ -26,6 +26,9 @@ public class OgreWallpaperService extends WallpaperService {
     private final String LOG_TAG = "OgreWallpaperEService";
     protected Handler handler = null;
 
+    // Live wallpapers may have more than one instance (e.g. one for preview, one for the actual wallpaper).
+    // However, we're only allowed one instance of the OGRE app at once.
+    // This class handles this problem by closing and reopening OGRE when necessary, using the most recent Surface.
     private class SurfaceList {
         SurfaceList() {
             mSurfaces = new LinkedList<>();
@@ -50,11 +53,6 @@ public class OgreWallpaperService extends WallpaperService {
             SurfaceHolder prevSurface = getCurrentSurface();
             mSurfaces.remove(holder);
             if (prevSurface != getCurrentSurface()) {
-                /*handler.post(new Runnable() {
-                    public void run() {
-                        ogreApp.getRenderWindow()._notifySurfaceDestroyed();
-                    }
-                });*/
                 onCurrentSurfaceChanged(getCurrentSurface());
             }
         }
@@ -89,7 +87,7 @@ public class OgreWallpaperService extends WallpaperService {
 
     @Override
     public void onCreate() {
-        Log.d(LOG_TAG, "onCreate " + this);
+        Log.d(LOG_TAG, "onCreate");
         super.onCreate();
         handler = new Handler();
         mSurfaceList = new SurfaceList();
@@ -98,7 +96,7 @@ public class OgreWallpaperService extends WallpaperService {
 
     @Override
     public void onDestroy() {
-        Log.d(LOG_TAG, "onDestroy " + this);
+        Log.d(LOG_TAG, "onDestroy");
         super.onDestroy();
 
         sysShutDown();
@@ -118,11 +116,15 @@ public class OgreWallpaperService extends WallpaperService {
 
                     renderer = new Runnable() {
                         public void run() {
-
-                            if (paused)
+                            //Log.d(LOG_TAG, "Renderer: " + ogreApp + ", initOGRE: " + initOGRE + ",  wndCreate: " + wndCreate);
+                            if (paused) {
+                                Log.d(LOG_TAG, "Early return");
                                 return;
+                            }
 
-                            Surface lastSurface = mSurfaceList.getCurrentSurface().getSurface();
+                            Surface lastSurface;
+                            assert(mSurfaceList.getCurrentSurface() != null);
+                            lastSurface = mSurfaceList.getCurrentSurface().getSurface();
                             if (!wndCreate && lastSurface != null) {
                                 wndCreate = true;
 
@@ -182,6 +184,7 @@ public class OgreWallpaperService extends WallpaperService {
                             if (initOGRE && wndCreate) {
                                 long now = System.currentTimeMillis();
                                 float delta = (float)(now - time) / 1000f;
+                                //Log.d(LOG_TAG, "time: " + time + ", now: " + now + ", delta: " + delta);
                                 time = now;
                                 SceneNode fluff = scnMgr.getSceneNode("Sire");
                                 fluff.yaw(new Radian(delta*0.5f));
@@ -209,7 +212,6 @@ public class OgreWallpaperService extends WallpaperService {
                 if (ogreApp != null) {
                     ogreApp.getRenderWindow()._notifySurfaceDestroyed();
                     ogreApp.closeApp();
-                    //ogreApp.shutdown();
                 }
                 ogreApp = null;
                 initOGRE = false;
@@ -226,21 +228,31 @@ public class OgreWallpaperService extends WallpaperService {
 
     private class OgreWallpaperEngine extends Engine {
         public final String LOG_TAG = "OgreWallpaperEngine";
+        private SurfaceHolder mSurfaceHolder;
 
         @Override
         public void onVisibilityChanged(boolean visible) {
-            Log.d(LOG_TAG, "onVisibilityChanged(" + visible + ")");
+            Log.d(LOG_TAG, "onVisibilityChanged(" + visible + ") " + this);
             paused = !visible;
             if (visible) {
+                if (mSurfaceList.getCurrentSurface() != mSurfaceHolder) {
+                    // TODO: this is a hack to put our own SurfaceHolder to the front of the list
+                    mSurfaceList.removeSurface(mSurfaceHolder);
+                    mSurfaceList.addSurface(mSurfaceHolder);
+                }
                 handler.post(renderer);
             } else {
-                handler.removeCallbacks(renderer);
+                if (mSurfaceList.getCurrentSurface() == mSurfaceHolder) {
+                    // TODO: this is a hack to put our own SurfaceHolder to the *back* of the list
+                    mSurfaceList.removeSurface(mSurfaceHolder);
+                    handler.removeCallbacks(renderer);
+                }
             }
         }
 
         @Override
         public void onSurfaceDestroyed(SurfaceHolder holder) {
-            Log.d(LOG_TAG, "onSurfaceDestroyed");
+            Log.d(LOG_TAG, "onSurfaceDestroyed " + this);
             super.onSurfaceDestroyed(holder);
             mSurfaceList.removeSurface(holder);
         }
@@ -248,9 +260,7 @@ public class OgreWallpaperService extends WallpaperService {
         @Override
         public void onSurfaceChanged(SurfaceHolder holder, int format,
                                      int width, int height) {
-            Log.d(LOG_TAG, "onSurfaceChanged");
-            //this.width = width;
-            //this.height = height;
+            Log.d(LOG_TAG, "onSurfaceChanged " + this);
             super.onSurfaceChanged(holder, format, width, height);
             if (holder.getSurface() != null
                     && holder.getSurface().isValid()) {
@@ -258,6 +268,7 @@ public class OgreWallpaperService extends WallpaperService {
             } else {
                 Log.e(LOG_TAG, "No valid SurfaceHolder!");
             }
+            mSurfaceHolder = holder;
         }
 
         @Override
@@ -270,24 +281,14 @@ public class OgreWallpaperService extends WallpaperService {
 
         @Override
         public void onCreate(SurfaceHolder holder) {
-            Log.d(LOG_TAG, "onCreate");
+            Log.d(LOG_TAG, "onCreate " + this);
             super.onCreate(holder);
-            /*(if (holder.getSurface() != null
-                    && holder.getSurface().isValid()) {
-                lastSurface = holder.getSurface();
-                if (initRunnable != null) {
-                    handler.post(initRunnable);
-                } else {
-                    Log.e(LOG_TAG, "initRunnable is null!");
-                }
-            } else {
-                Log.e(LOG_TAG, "No valid SurfaceHolder!");
-            }*/
+            mSurfaceHolder = holder;
         }
 
         @Override
         public void onDestroy() {
-            Log.d(LOG_TAG, "onDestroy");
+            Log.d(LOG_TAG, "onDestroy " + this);
             super.onDestroy();
         }
     }
