@@ -7,7 +7,7 @@ attribute vec4 uv0;
 varying vec4 modelPos;
 varying vec4 texCoord;
 
-#define SNAP_FACTOR 15.0
+#define SNAP_FACTOR 12.0
 
 void main(void)
 {
