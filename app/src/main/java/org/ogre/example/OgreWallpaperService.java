@@ -42,11 +42,19 @@ public class OgreWallpaperService extends WallpaperService {
             }
         }
 
+        // Cases:
+        // holder is not present (add and onCurrentSurfaceChanged)
+        // holder is already present but not current (remove, add, and onCurrentSurfaceChanged)
+        // holder is current (do nothing)
         public void addSurface(SurfaceHolder holder) {
-            if (!mSurfaces.contains(holder)) {
-                mSurfaces.add(holder);
-                onCurrentSurfaceChanged(holder);
+            if (holder == getCurrentSurface()) {
+                return;
             }
+
+            // Remove first, because if it's already present, we'll want to move it to the front
+            mSurfaces.remove(holder);
+            mSurfaces.add(holder);
+            onCurrentSurfaceChanged(holder);
         }
 
         public void removeSurface(SurfaceHolder holder) {
@@ -233,18 +241,12 @@ public class OgreWallpaperService extends WallpaperService {
         public void onVisibilityChanged(boolean visible) {
             Log.d(LOG_TAG, "onVisibilityChanged(" + visible + ") " + this);
             if (visible) {
-                if (mSurfaceList.getCurrentSurface() != mSurfaceHolder) {
-                    // TODO: this is a hack to put our own SurfaceHolder to the front of the list
-                    mSurfaceList.removeSurface(mSurfaceHolder);
-                    mSurfaceList.addSurface(mSurfaceHolder);
-                }
+                mSurfaceList.addSurface(mSurfaceHolder); // This will bring the Surface to the front if it's already present
                 paused = false;
                 handler.post(renderer);
-            } else {
-                if (mSurfaceList.getCurrentSurface() == mSurfaceHolder) {
-                    paused = true;
-                    handler.removeCallbacks(renderer);
-                }
+            } else if (mSurfaceList.getCurrentSurface() == mSurfaceHolder) {
+                paused = true;
+                handler.removeCallbacks(renderer);
             }
         }
 
