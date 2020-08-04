@@ -65,7 +65,7 @@ public class OgreWallpaperService extends WallpaperService {
         Log.d(LOG_TAG, "onCreate");
         super.onCreate();
         mSurfaceList = new SurfaceList();
-        mRenderer = new OgreRenderer(getResources().getAssets());
+        mRenderer = new ExampleSceneRenderer(getResources().getAssets());
     }
 
     @Override
