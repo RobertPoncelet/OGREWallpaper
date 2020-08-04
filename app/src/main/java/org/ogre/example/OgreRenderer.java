@@ -18,21 +18,19 @@ import org.ogre.ShaderGenerator;
 import org.ogre.Viewport;
 
 public class OgreRenderer {
-    OgreRenderer(AssetManager assetMgr, Surface surface) {
-        mHandler = new Handler();
-        sysInit(assetMgr, surface);
-    }
-
     private final String LOG_TAG = "OgreRenderer";
 
-    protected Handler mHandler = null;
+    // Top-level elements
+    private Handler mHandler;
+    private AssetManager mAssetMgr;
+    private Runnable mRenderTask;
+    private Runnable mInitTask;
+    private Surface mSurface;
 
-    private Runnable mRenderTask = null;
-    private Runnable mInitTask = null;
+    // Used by Runnables
     private boolean mPaused = false;
     private boolean mInitOGRE = false;
     private boolean mWndCreate = false;
-    private Surface mSurface = null;
 
     ApplicationContext mOgreApp = null;
 
@@ -41,105 +39,71 @@ public class OgreRenderer {
     AnimationState animationState;
     long time;
 
-    public void sysInit(final AssetManager assetMgr, Surface surface) {
-        Log.d(LOG_TAG, "sysInit");
-        mSurface = surface;
+    OgreRenderer(AssetManager assetMgr) {
+        mHandler = new Handler();
+        mAssetMgr = assetMgr;
+
+        // Don't actually run this yet - mSurface hasn't been initialised
+        mRenderTask = new Runnable() {
+            public void run() {
+                if (mPaused) {
+                    Log.d(LOG_TAG, "Early return");
+                    return;
+                }
+
+                if (!mWndCreate && mSurface != null) {
+                    mWndCreate = true;
+
+                    if(mOgreApp == null) {
+                        mOgreApp = new ApplicationContext();
+                        mOgreApp.initAppForAndroid(mAssetMgr, mSurface);
+                        setUpScene();
+                    } else {
+                        mOgreApp.getRenderWindow()._notifySurfaceCreated(mSurface);
+                    }
+
+                    mHandler.post(this);
+                    return;
+                }
+
+                if (mInitOGRE && mWndCreate) {
+                    updateScene();
+                    mOgreApp.getRoot().renderOneFrame();
+                }
+
+                mHandler.post(this);
+            }
+        };
+
         mInitTask = new Runnable() {
             public void run() {
                 Log.d(LOG_TAG, "initRunnable");
                 if (!mInitOGRE) {
                     mInitOGRE = true;
-
-                    mRenderTask = new Runnable() {
-                        public void run() {
-                            if (mPaused) {
-                                Log.d(LOG_TAG, "Early return");
-                                return;
-                            }
-
-                            if (!mWndCreate && mSurface != null) {
-                                mWndCreate = true;
-
-                                if(mOgreApp == null) {
-                                    mOgreApp = new ApplicationContext();
-                                    mOgreApp.initAppForAndroid(assetMgr, mSurface);
-
-                                    scnMgr = mOgreApp.getRoot().createSceneManager();
-                                    ShaderGenerator.getSingleton().addSceneManager(scnMgr);
-
-                                    scnMgr.setAmbientLight(new ColourValue(0.5f, 0.5f, 0.5f));
-
-                                    Light light = scnMgr.createLight("MainLight");
-                                    SceneNode lightnode = scnMgr.getRootSceneNode().createChildSceneNode();
-                                    lightnode.setPosition(0, 10, 10);
-                                    lightnode.attachObject(light);
-
-                                    Camera cam = scnMgr.createCamera("myCam");
-                                    cam.setNearClipDistance(0.5f);
-                                    cam.setFOVy(new Radian(0.75f));
-                                    cam.setAutoAspectRatio(true);
-
-                                    SceneNode camnode = scnMgr.getRootSceneNode().createChildSceneNode();
-                                    camnode.attachObject(cam);
-                                    camnode.setPosition(0f, 2f, 14);
-                                    camnode.setDirection(0f, -2f, -14f);
-
-                                    Entity ent = scnMgr.createEntity("Cylinder.mesh");
-                                    animationState = ent.getAnimationState("idle");
-                                    animationState.setLoop(true);
-                                    animationState.setEnabled(true);
-                                    time = System.currentTimeMillis();
-                                    SceneNode node = scnMgr.getRootSceneNode().createChildSceneNode("Sire");
-                                    node.attachObject(ent);
-                                    node.scale(0.1f, 0.1f, 0.1f);
-                                    node.translate(0f, -4.2f, 0f);
-                                    //node.rotate(new Vector3(1f, 0f, 0f), new Radian(-1.5f));
-                                    //node.setVisible(false);
-
-                                    Entity ent2 = scnMgr.createEntity("Plane.mesh");
-                                    SceneNode node2 = scnMgr.getRootSceneNode().createChildSceneNode("Plane");
-                                    node2.attachObject(ent2);
-                                    node2.translate(0f, -4.4f, 0f);
-                                    node2.scale(3f, 3f, 3f);
-                                    //node2.setVisible(false);
-
-                                    Viewport vp = mOgreApp.getRenderWindow().addViewport(cam);
-                                    vp.setBackgroundColour(new ColourValue(0.3f, 0.3f, 0.3f));
-                                } else {
-                                    mOgreApp.getRenderWindow()._notifySurfaceCreated(mSurface);
-                                }
-
-                                mHandler.post(this);
-                                return;
-                            }
-
-                            if (mInitOGRE && mWndCreate) {
-                                long now = System.currentTimeMillis();
-                                float delta = (float)(now - time) / 1000f;
-                                //Log.d(LOG_TAG, "time: " + time + ", now: " + now + ", delta: " + delta);
-                                time = now;
-                                SceneNode fluff = scnMgr.getSceneNode("Sire");
-                                fluff.yaw(new Radian(delta*0.5f));
-                                SceneNode cube = scnMgr.getSceneNode("Plane");
-                                cube.yaw(new Radian(delta*0.5f));
-                                animationState.addTime(delta);
-                                mOgreApp.getRoot().renderOneFrame();
-                            }
-
-                            mHandler.post(this);
-                        }
-                    };
-
                     mHandler.post(mRenderTask);
                 }
             }
-
         };
     }
 
-    public void sysShutDown() {
+    public void reInit(Surface surface) {
+        if (surface == null || !surface.isValid()) {
+            Log.e(LOG_TAG, "Surface is not valid!");
+            return;
+        }
+        mSurface = surface;
+
+        if (mInitTask != null) {
+            // Now we have a valid Surface and can start rendering!
+            mHandler.post(mInitTask);
+        } else {
+            Log.e(LOG_TAG, "initRunnable is null!");
+        }
+    }
+
+    public void shutDown() {
         // TODO: can/should this be executed here rather than on the Handler?
-        Runnable destroyer = new Runnable() {
+        mHandler.post(new Runnable() {
             public void run() {
                 if (mOgreApp != null) {
                     mOgreApp.getRenderWindow()._notifySurfaceDestroyed();
@@ -149,17 +113,7 @@ public class OgreRenderer {
                 mInitOGRE = false;
                 mWndCreate = false;
             }
-        };
-        mHandler.post(destroyer);
-    }
-
-    public void reInit(Surface surface) {
-        mSurface = surface;
-        if (mInitTask != null) {
-            mHandler.post(mInitTask);
-        } else {
-            Log.e(LOG_TAG, "initRunnable is null!");
-        }
+        });
     }
 
     public void onVisible() {
@@ -170,5 +124,61 @@ public class OgreRenderer {
     public void onHide() {
         mPaused = true;
         mHandler.removeCallbacks(mRenderTask);
+    }
+
+    protected void setUpScene() {
+        scnMgr = mOgreApp.getRoot().createSceneManager();
+        ShaderGenerator.getSingleton().addSceneManager(scnMgr);
+
+        scnMgr.setAmbientLight(new ColourValue(0.5f, 0.5f, 0.5f));
+
+        Light light = scnMgr.createLight("MainLight");
+        SceneNode lightnode = scnMgr.getRootSceneNode().createChildSceneNode();
+        lightnode.setPosition(0, 10, 10);
+        lightnode.attachObject(light);
+
+        Camera cam = scnMgr.createCamera("myCam");
+        cam.setNearClipDistance(0.5f);
+        cam.setFOVy(new Radian(0.75f));
+        cam.setAutoAspectRatio(true);
+
+        SceneNode camnode = scnMgr.getRootSceneNode().createChildSceneNode();
+        camnode.attachObject(cam);
+        camnode.setPosition(0f, 2f, 14);
+        camnode.setDirection(0f, -2f, -14f);
+
+        Entity ent = scnMgr.createEntity("Cylinder.mesh");
+        animationState = ent.getAnimationState("idle");
+        animationState.setLoop(true);
+        animationState.setEnabled(true);
+        time = System.currentTimeMillis();
+        SceneNode node = scnMgr.getRootSceneNode().createChildSceneNode("Sire");
+        node.attachObject(ent);
+        node.scale(0.1f, 0.1f, 0.1f);
+        node.translate(0f, -4.2f, 0f);
+        //node.rotate(new Vector3(1f, 0f, 0f), new Radian(-1.5f));
+        //node.setVisible(false);
+
+        Entity ent2 = scnMgr.createEntity("Plane.mesh");
+        SceneNode node2 = scnMgr.getRootSceneNode().createChildSceneNode("Plane");
+        node2.attachObject(ent2);
+        node2.translate(0f, -4.4f, 0f);
+        node2.scale(3f, 3f, 3f);
+        //node2.setVisible(false);
+
+        Viewport vp = mOgreApp.getRenderWindow().addViewport(cam);
+        vp.setBackgroundColour(new ColourValue(0.3f, 0.3f, 0.3f));
+    }
+
+    protected void updateScene() {
+        long now = System.currentTimeMillis();
+        float delta = (float)(now - time) / 1000f;
+        //Log.d(LOG_TAG, "time: " + time + ", now: " + now + ", delta: " + delta);
+        time = now;
+        SceneNode fluff = scnMgr.getSceneNode("Sire");
+        fluff.yaw(new Radian(delta*0.5f));
+        SceneNode cube = scnMgr.getSceneNode("Plane");
+        cube.yaw(new Radian(delta*0.5f));
+        animationState.addTime(delta);
     }
 }

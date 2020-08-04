@@ -10,6 +10,7 @@ import java.util.LinkedList;
 public class OgreWallpaperService extends WallpaperService {
     private final String LOG_TAG = "OgreWallpaperEService";
     private OgreRenderer mRenderer;
+    SurfaceList mSurfaceList;
 
     // Live wallpapers may have more than one instance (e.g. one for preview, one for the actual wallpaper).
     // However, we're only allowed one instance of the OGRE app at once.
@@ -27,12 +28,11 @@ public class OgreWallpaperService extends WallpaperService {
             }
         }
 
-        // Cases:
-        // holder is not present (add and onCurrentSurfaceChanged)
-        // holder is already present but not current (remove, add, and onCurrentSurfaceChanged)
-        // holder is current (do nothing)
         public void addSurface(SurfaceHolder holder) {
             if (holder == getCurrentSurface()) {
+                return;
+            } else if (holder.getSurface() == null || !holder.getSurface().isValid()) {
+                Log.e(LOG_TAG, "Invalid SurfaceHolder!");
                 return;
             }
 
@@ -51,7 +51,7 @@ public class OgreWallpaperService extends WallpaperService {
         }
 
         private void onCurrentSurfaceChanged(SurfaceHolder holder) {
-            mRenderer.sysShutDown();
+            mRenderer.shutDown();
             if (!mSurfaces.isEmpty()) {
                 mRenderer.reInit(holder.getSurface());
             }
@@ -59,48 +59,34 @@ public class OgreWallpaperService extends WallpaperService {
 
         private LinkedList<SurfaceHolder> mSurfaces;
     }
-    SurfaceList mSurfaceList;
 
     @Override
     public void onCreate() {
         Log.d(LOG_TAG, "onCreate");
         super.onCreate();
         mSurfaceList = new SurfaceList();
+        mRenderer = new OgreRenderer(getResources().getAssets());
     }
 
     @Override
     public void onDestroy() {
         Log.d(LOG_TAG, "onDestroy");
         super.onDestroy();
-        mRenderer.sysShutDown();
+        mRenderer.shutDown();
     }
 
     @Override
     public Engine onCreateEngine() {
-        OgreWallpaperEngine engine = new OgreWallpaperEngine();
-        if (mRenderer == null) {
-            mRenderer = new OgreRenderer(getResources().getAssets(), engine.getSurfaceHolder().getSurface());
-        }
-        return engine;
+        return new OgreWallpaperEngine();
     }
 
     private class OgreWallpaperEngine extends Engine {
         public final String LOG_TAG = "OgreWallpaperEngine";
-        @Override
-        public void onCreate(SurfaceHolder holder) {
-            Log.d(LOG_TAG, "onCreate " + this);
-            super.onCreate(holder);
-        }
-
-        @Override
-        public void onDestroy() {
-            Log.d(LOG_TAG, "onDestroy " + this);
-            super.onDestroy();
-        }
 
         @Override
         public void onVisibilityChanged(boolean visible) {
             Log.d(LOG_TAG, "onVisibilityChanged(" + visible + ") " + this);
+            super.onVisibilityChanged(visible);
             if (visible) {
                 mSurfaceList.addSurface(getSurfaceHolder()); // This will bring the Surface to the front if it's already present
                 mRenderer.onVisible();
@@ -121,18 +107,13 @@ public class OgreWallpaperService extends WallpaperService {
                                      int width, int height) {
             Log.d(LOG_TAG, "onSurfaceChanged " + this);
             super.onSurfaceChanged(holder, format, width, height);
-            if (holder.getSurface() != null
-                    && holder.getSurface().isValid()) {
-                mSurfaceList.addSurface(holder);
-            } else {
-                Log.e(LOG_TAG, "No valid SurfaceHolder!");
-            }
+            mSurfaceList.addSurface(holder);
         }
 
         @Override
         public void onTouchEvent(MotionEvent event) {
             // TODO
-            //if (touchEnabled) {
+            //if (mTouchEnabled) {
                 super.onTouchEvent(event);
             //}
         }
