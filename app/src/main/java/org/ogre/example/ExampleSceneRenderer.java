@@ -7,6 +7,8 @@ import org.ogre.Camera;
 import org.ogre.ColourValue;
 import org.ogre.Entity;
 import org.ogre.Light;
+import org.ogre.MaterialManager;
+import org.ogre.MaterialPtr;
 import org.ogre.Radian;
 import org.ogre.SceneManager;
 import org.ogre.SceneNode;
@@ -44,12 +46,14 @@ public class ExampleSceneRenderer extends OgreRenderer {
         camnode.setPosition(0f, 2f, 14);
         camnode.setDirection(0f, -2f, -14f);
 
-        Entity ent = scnMgr.createEntity("Cube.001.mesh");
-        animationState = ent.getAnimationState("idle");
+        SceneNode baseNode = scnMgr.getRootSceneNode().createChildSceneNode("base");
+
+        Entity ent = scnMgr.createEntity("penguin.mesh");
+        animationState = ent.getAnimationState("amuse");
         animationState.setLoop(true);
         animationState.setEnabled(true);
         time = System.currentTimeMillis();
-        SceneNode node = scnMgr.getRootSceneNode().createChildSceneNode("Cube");
+        SceneNode node = baseNode.createChildSceneNode("Penguin");
         node.attachObject(ent);
         node.scale(0.1f, 0.1f, 0.1f);
         node.translate(0f, -4.2f, 0f);
@@ -57,14 +61,21 @@ public class ExampleSceneRenderer extends OgreRenderer {
         //node.setVisible(false);
 
         Entity ent2 = scnMgr.createEntity("Plane.mesh");
-        SceneNode node2 = scnMgr.getRootSceneNode().createChildSceneNode("Plane");
+        SceneNode node2 = baseNode.createChildSceneNode("Plane");
         node2.attachObject(ent2);
         node2.translate(0f, -4.4f, 0f);
         node2.scale(3f, 3f, 3f);
         //node2.setVisible(false);
 
+        Entity ent3 = scnMgr.createEntity("cube.mesh");
+        final MaterialPtr material = MaterialManager.getSingleton().getByName("sky");
+        ent3.setMaterial(material);
+        SceneNode node3 = baseNode.createChildSceneNode("cube");
+        node3.scale(0.25f, 0.25f, 0.25f);
+        node3.attachObject(ent3);
+
         Viewport vp = mOgreApp.getRenderWindow().addViewport(cam);
-        vp.setBackgroundColour(new ColourValue(0.3f, 0.3f, 0.3f));
+        vp.setBackgroundColour(new ColourValue(0.4f, 0.7f, 0.9f));
     }
 
     @Override
@@ -73,10 +84,8 @@ public class ExampleSceneRenderer extends OgreRenderer {
         float delta = (float)(now - time) / 1000f;
         //Log.d(LOG_TAG, "time: " + time + ", now: " + now + ", delta: " + delta);
         time = now;
-        SceneNode node = scnMgr.getSceneNode("Cube");
-        node.yaw(new Radian(delta*0.25f));
-        SceneNode cube = scnMgr.getSceneNode("Plane");
-        cube.yaw(new Radian(delta*0.25f));
+        SceneNode baseNode = scnMgr.getSceneNode("base");
+        baseNode.yaw(new Radian(delta*0.25f));
         animationState.addTime(delta);
     }
 }
