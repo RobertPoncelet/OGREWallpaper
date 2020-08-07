@@ -1,0 +1,66 @@
+fragment_program CRTFP glsles
+{
+	source CRTFp.glsl
+    default_params
+    {
+        param_named RT int 0
+        param_named NormalMap int 1
+    }
+}
+
+material CRTPass
+{
+	technique
+	{
+		pass
+		{
+			depth_check off
+            polygon_mode_overrideable false
+
+			vertex_program_ref Ogre/Compositor/StdQuad_Tex2a_vp
+			{
+			}
+
+			fragment_program_ref CRTFP
+			{
+			}
+
+			texture_unit RT
+			{
+                tex_coord_set 0
+				tex_address_mode clamp
+				filtering none
+			}
+
+			texture_unit
+			{
+				texture WaterNormal1.tga 2d
+                tex_coord_set 1
+				//tex_address_mode clamp
+				filtering linear linear linear
+			}
+		}
+	}
+}
+
+compositor CRT
+{
+    technique
+    {
+        texture rt0 target_width_scaled 0.25 target_height_scaled 0.25 PF_BYTE_RGB
+
+        target rt0 { input previous }
+
+        target_output
+        {
+            // Start with clear output
+            input none
+
+            pass render_quad
+            {
+                material CRTPass
+                input 0 rt0
+            }
+        }
+    }
+}

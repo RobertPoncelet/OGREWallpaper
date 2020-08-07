@@ -144,9 +144,9 @@ public class ExampleSceneRenderer extends OgreRenderer {
         miniScreenNode.attachObject(miniScreen);
 
         MaterialPtr renderMaterial =
-                MaterialManager.getSingleton().create(
-                "RttMat",
-                ResourceGroupManager.getDEFAULT_RESOURCE_GROUP_NAME());
+                        MaterialManager.getSingleton().create(
+                                "RttMat",
+                                ResourceGroupManager.getDEFAULT_RESOURCE_GROUP_NAME());
         renderMaterial.getTechnique(0).getPass(0).setLightingEnabled(false);
         TextureUnitState tex = renderMaterial.getTechnique(0).getPass(0).createTextureUnitState("RttTex");
         tex.setTextureFiltering(TextureFilterOptions.TFO_NONE);
@@ -155,9 +155,9 @@ public class ExampleSceneRenderer extends OgreRenderer {
 
         renderTexture.addListener(new SireRenderTargetListener());
 
-        /*final String compName = "Glass";
+        final String compName = "CRT";
         CompositorInstance comp = CompositorManager.getSingleton().addCompositor(vp, compName);
-        CompositorManager.getSingleton().setCompositorEnabled(vp, compName, true);*/
+        CompositorManager.getSingleton().setCompositorEnabled(vp, compName, true);
     }
 
     @Override
