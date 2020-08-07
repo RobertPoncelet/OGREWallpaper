@@ -53,7 +53,7 @@ public class OgreWallpaperService extends WallpaperService {
         private void onCurrentSurfaceChanged(SurfaceHolder holder) {
             mRenderer.shutDown();
             if (!mSurfaces.isEmpty()) {
-                mRenderer.reInit(holder.getSurface());
+                mRenderer.reInit(holder);
             }
         }
 
