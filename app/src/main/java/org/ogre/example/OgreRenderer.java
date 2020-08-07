@@ -2,6 +2,7 @@ package org.ogre.example;
 
 import android.content.res.AssetManager;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -24,8 +25,11 @@ public abstract class OgreRenderer {
     private boolean mPaused = false;
     private boolean mInitOGRE = false;
     private boolean mWndCreate = false;
+    private long mLastRenderTime;
 
     ApplicationContext mOgreApp = null;
+
+    private final long FRAME_INTERVAL = 32;
 
     OgreRenderer(AssetManager assetMgr) {
         mHandler = new Handler();
@@ -56,10 +60,11 @@ public abstract class OgreRenderer {
 
                 if (mInitOGRE && mWndCreate) {
                     updateScene();
+                    mLastRenderTime = SystemClock.uptimeMillis();
                     mOgreApp.getRoot().renderOneFrame();
                 }
 
-                mHandler.post(this);
+                mHandler.postAtTime(this, mLastRenderTime + FRAME_INTERVAL);
             }
         };
 
@@ -68,6 +73,7 @@ public abstract class OgreRenderer {
                 Log.d(LOG_TAG, "initRunnable");
                 if (!mInitOGRE) {
                     mInitOGRE = true;
+                    mLastRenderTime = SystemClock.uptimeMillis();
                     mHandler.post(mRenderTask);
                 }
             }
@@ -92,6 +98,7 @@ public abstract class OgreRenderer {
     }
 
     public void shutDown() {
+        mHandler.removeCallbacks(mRenderTask);
         mHandler.post(new Runnable() {
             public void run() {
                 if (mOgreApp != null) {
@@ -107,7 +114,7 @@ public abstract class OgreRenderer {
 
     public void onVisible() {
         mPaused = false;
-        mHandler.post(mRenderTask);
+        mHandler.postAtTime(mRenderTask, mLastRenderTime + FRAME_INTERVAL);
     }
 
     public void onHide() {

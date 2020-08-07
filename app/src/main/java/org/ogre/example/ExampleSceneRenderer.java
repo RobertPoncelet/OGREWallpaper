@@ -168,9 +168,9 @@ public class ExampleSceneRenderer extends OgreRenderer {
         //Log.d(LOG_TAG, "time: " + time + ", now: " + now + ", delta: " + delta);
         time = now;
         mBaseNode.yaw(new Radian(delta*0.25f));
-        Vector3 pos = new Vector3(0f, (float)sin(dTime * .25f) * 2f, 0f);
+        Vector3 pos = new Vector3(0f, (float)sin(dTime * .25f) * .5f, 0f);
         mBaseNode.setPosition(pos);
-        mCamNode.lookAt(pos, Node.TransformSpace.TS_WORLD);
+        //mCamNode.lookAt(pos, Node.TransformSpace.TS_WORLD);
         animationState.addTime(delta);
     }
 }
