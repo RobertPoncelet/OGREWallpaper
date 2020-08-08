@@ -5,7 +5,6 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.Surface;
-import android.view.SurfaceHolder;
 
 import org.ogre.ApplicationContext;
 
@@ -18,8 +17,6 @@ public abstract class OgreRenderer {
     private Runnable mRenderTask;
     private Runnable mInitTask;
     private Surface mSurface;
-    private int mWidth;
-    private int mHeight;
 
     // Used by Runnables
     private boolean mPaused = false;
@@ -80,14 +77,12 @@ public abstract class OgreRenderer {
         };
     }
 
-    public void reInit(SurfaceHolder holder) {
-        if (holder == null || holder.getSurface() == null || !holder.getSurface().isValid()) {
+    public void reInit(Surface surface) {
+        if (surface == null || !surface.isValid()) {
             Log.e(LOG_TAG, "Surface is not valid!");
             return;
         }
-        mSurface = holder.getSurface();
-        mWidth = holder.getSurfaceFrame().width();
-        mHeight = holder.getSurfaceFrame().height();
+        mSurface = surface;
 
         if (mInitTask != null) {
             // Now we have a valid Surface and can start rendering!
@@ -125,7 +120,4 @@ public abstract class OgreRenderer {
     protected abstract void setUpScene();
 
     protected abstract void updateScene();
-
-    protected int getWidth() { return mWidth; }
-    protected int getHeight() { return mHeight; }
 }
