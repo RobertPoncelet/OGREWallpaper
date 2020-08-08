@@ -19,6 +19,10 @@ material CRTPass
 
 			vertex_program_ref Ogre/Compositor/StdQuad_Tex2a_vp
 			{
+			    default_params
+                {
+                    param_named_auto cViewportSize viewport_size
+                }
 			}
 
 			fragment_program_ref CRTFP
@@ -47,7 +51,8 @@ compositor CRT
 {
     technique
     {
-        texture rt0 target_width_scaled 0.25 target_height_scaled 0.25 PF_BYTE_RGB
+        texture rt0 target_width_scaled 0.125 target_height_scaled 0.125 PF_BYTE_RGB
+        //texture rt0 target_width target_height PF_BYTE_RGB
 
         target rt0 { input previous }
 
