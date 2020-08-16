@@ -10,6 +10,7 @@
 //-------------------------------
 
 uniform sampler2D RT;
+uniform float brightnessScale;
 varying vec2 oUv0;
 
 void main()
@@ -24,5 +25,5 @@ void main()
     bright = dot( bright4, vec4( 0.333333, 0.333333, 0.333333, 0.000000) );
     tex += (bright + 0.600000);
 
-    gl_FragColor = tex;
+    gl_FragColor = tex * brightnessScale;
 }

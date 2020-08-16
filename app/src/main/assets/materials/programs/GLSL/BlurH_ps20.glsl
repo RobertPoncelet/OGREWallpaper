@@ -47,7 +47,7 @@ void main()
     sum = vec4( 0 );
     for( i=0;i < 11; i++ )
     {
-        sum += texture2D( Blur0, texCoord + (pos[i] * 0.0100000) ) * samples[i];
+        sum += texture2D( Blur0, texCoord + (pos[i] * 0.00500000) ) * samples[i];
     }
 
     gl_FragColor = sum;

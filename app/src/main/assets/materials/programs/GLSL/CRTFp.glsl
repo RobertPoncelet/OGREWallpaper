@@ -75,7 +75,7 @@ uniform float SHARPNESS_V;
 #define GAMMA_OUTPUT 1.8
 #define MASK_SIZE 1.0
 #define MASK_STAGGER 3.0
-#define MASK_STRENGTH 0.3
+#define MASK_STRENGTH 0.2
 #define MASK_DOT_HEIGHT 1.0
 #define MASK_DOT_WIDTH 2.0
 #define SCANLINE_BEAM_WIDTH_MAX 1.5
