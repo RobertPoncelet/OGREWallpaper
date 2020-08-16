@@ -69,21 +69,20 @@ uniform float SCANLINE_STRENGTH;
 uniform float SHARPNESS_H;
 uniform float SHARPNESS_V;
 #else
-#define BRIGHT_BOOST 1.2
+#define BRIGHT_BOOST 1.3
 #define DILATION 1.0
 #define GAMMA_INPUT 2.0
 #define GAMMA_OUTPUT 1.8
 #define MASK_SIZE 1.0
-#define MASK_STAGGER 0.0
+#define MASK_STAGGER 3.0
 #define MASK_STRENGTH 0.3
 #define MASK_DOT_HEIGHT 1.0
-#define MASK_DOT_WIDTH 1.0
+#define MASK_DOT_WIDTH 2.0
 #define SCANLINE_BEAM_WIDTH_MAX 1.5
 #define SCANLINE_BEAM_WIDTH_MIN 1.5
 #define SCANLINE_BRIGHT_MAX 0.65
 #define SCANLINE_BRIGHT_MIN 0.35
-#define SCANLINE_CUTOFF 400.0
-#define SCANLINE_STRENGTH 0.5
+#define SCANLINE_STRENGTH 0.8
 #define SHARPNESS_H 0.5
 #define SHARPNESS_V 1.0
 #endif
@@ -101,7 +100,7 @@ uniform mat4 modelViewProj;*/
 
 // Set to 0 to use linear filter and gain speed
 // TODO: see if this works
-#define ENABLE_LANCZOS 1
+#define ENABLE_LANCZOS 0
 
 /*struct out_vertex
 {
@@ -135,7 +134,6 @@ vec4 dilate(vec4 col)
 
 float curve_distance(float x, float sharp)
 {
-
     /*
         apply half-circle s-curve to distance for sharper (more pixelated) interpolation
         single line formula for Graph Toy:
@@ -208,15 +206,13 @@ vec4 crt_easymode(vec2 texture_size, vec2 video_size, vec2 output_size, vec2 coo
     float scan_weight = 1.0 - pow(cos(coords.y * 2.0 * PI * texture_size.y) * 0.5 + 0.5, scan_beam) * SCANLINE_STRENGTH;
 
     float mask = 1.0 - MASK_STRENGTH;
-    vec2 mod_fac = floor(coords * output_size * texture_size / (video_size * vec2(MASK_SIZE, MASK_DOT_HEIGHT * MASK_SIZE)));
+    vec2 mod_fac = floor((abs(coords) * video_size) / vec2(MASK_SIZE, MASK_DOT_HEIGHT * MASK_SIZE)); //floor(coords * output_size * texture_size / (video_size * vec2(MASK_SIZE, MASK_DOT_HEIGHT * MASK_SIZE)));
     int dot_no = int(mod((mod_fac.x + mod(mod_fac.y, 2.0) * MASK_STAGGER) / MASK_DOT_WIDTH, 3.0));
     vec3 mask_weight;
 
     if (dot_no == 0) mask_weight = vec3(1.0, mask, mask);
     else if (dot_no == 1) mask_weight = vec3(mask, 1.0, mask);
     else mask_weight = vec3(mask, mask, 1.0);
-
-    if (video_size.y >= SCANLINE_CUTOFF) scan_weight = 1.0;
 
     col2 = col.rgb;
     col *= vec3(scan_weight);
@@ -236,7 +232,7 @@ void main()
 {
     //vec4 normal = 2.0 * (texture2D(NormalMap, oUv0 * 2.5) - 0.5);
     //gl_FragColor = texture2D(RT, oUv0 + normal.xy * 0.05);
-    vec2 size = vec2(2220.0, 1080.0); // TODO: fix this hack
+    vec2 size = vec2(1080.0, 2220.0); // TODO: fix this hack
     //gl_FragColor = crt_easymode(cViewportSize.xy, cViewportSize.xy, cViewportSize.xy, oUv0, RT);
-    gl_FragColor = crt_easymode(size.yx/8.0, size/4.0, size, oUv0, RT);
+    gl_FragColor = crt_easymode(size/8.0, size/5.0, size, oUv0, RT);
 }
