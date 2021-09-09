@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.ogre.jni"
+    android:versionCode="1"
+    android:versionName="1.12.7"
+	android:installLocation="auto">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <application android:label="OgreJNI" android:icon="@drawable/ic_launcher" android:hasCode="true">
+        
+        <activity android:name="org.ogre.example.BasicSample"
+        android:label="BasicSample"
+        android:configChanges="orientation|screenSize|keyboardHidden"
+        android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+            <meta-data android:name="android.app.lib_name" android:value="OgreJNI" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name="org.ogre.example.AndroidTextureOES"
+        android:label="AndroidTextureOES"
+        android:configChanges="orientation|screenSize|keyboardHidden"
+        android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+            <meta-data android:name="android.app.lib_name" android:value="OgreJNI" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
