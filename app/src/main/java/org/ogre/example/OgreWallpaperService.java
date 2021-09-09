@@ -8,7 +8,7 @@ import android.view.SurfaceHolder;
 import java.util.LinkedList;
 
 public class OgreWallpaperService extends WallpaperService {
-    private final String LOG_TAG = "OgreWallpaperEService";
+    private final String LOG_TAG = "OgreWallpaperService";
     private OgreRenderer mRenderer;
     SurfaceList mSurfaceList;
 

@@ -26,6 +26,7 @@ public abstract class OgreRenderer {
 
     ApplicationContext mOgreApp = null;
 
+    // TODO: allow configuration of frame rates
     private final long FRAME_INTERVAL = 32;
 
     OgreRenderer(AssetManager assetMgr) {
